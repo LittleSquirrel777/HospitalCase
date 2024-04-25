@@ -30,9 +30,9 @@
           <a :class="{ selected: visibility === key }" @click.prevent="visibility = key">{{ key | capitalize }}</a>
         </li>
       </ul>
-      <!-- <button class="clear-completed" v-show="todos.length > remaining" @click="clearCompleted">
-        Clear completed
-      </button> -->
+      <!--      <button v-show="todos.length > remaining" class="clear-completed" @click="clearCompleted">-->
+      <!--        Clear completed-->
+      <!--      </button>-->
     </footer>
   </section>
 </template>
@@ -47,14 +47,14 @@ const filters = {
   completed: todos => todos.filter(todo => todo.done)
 }
 const defalutList = [
-  { text: 'star this repository', done: false },
+  { text: 'breakfast', done: false },
   { text: 'fork this repository', done: false },
   { text: 'follow author', done: false },
-  { text: 'vue-element-admin', done: true },
-  { text: 'vue', done: true },
-  { text: 'element-ui', done: true },
-  { text: 'axios', done: true },
-  { text: 'webpack', done: true }
+  { text: 'lunch', done: true },
+  { text: 'dinner', done: true },
+  { text: 'deal with the problems', done: true },
+  { text: 'do some writing', done: true },
+  { text: 'watch a movie', done: true }
 ]
 export default {
   components: { Todo },

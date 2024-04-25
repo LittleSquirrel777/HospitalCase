@@ -19,7 +19,6 @@
           <span>{{ row.title }}</span>
         </template>
       </el-table-column>
-
       <el-table-column width="110px" align="center" label="Author">
         <template slot-scope="{row}">
           <span>{{ row.author }}</span>

@@ -50,7 +50,7 @@ module.exports = [
 
   // mock get all roles form server
   {
-    url: '/vue-element-admin/roles',
+    url: '/roles',
     type: 'get',
     response: _ => {
       return {

@@ -62,8 +62,8 @@
 <script>
 import path from 'path'
 import { deepClone } from '@/utils'
-import { getRoutes, getRoles, addRole, deleteRole, updateRole } from '@/api/role'
-
+import { getRoles, addRole, deleteRole, updateRole } from '@/api/role'
+import { asyncRoutes, constantRoutes } from '../../../mock/role/routes'
 const defaultRole = {
   key: '',
   name: '',
@@ -98,7 +98,8 @@ export default {
   },
   methods: {
     async getRoutes() {
-      const res = await getRoutes()
+      // const res = await getRoutes()
+      const res = deepClone([...constantRoutes, ...asyncRoutes])
       this.serviceRoutes = res.data
       this.routes = this.generateRoutes(res.data)
     },
@@ -106,7 +107,6 @@ export default {
       const res = await getRoles()
       this.rolesList = res.data
     },
-
     // Reshape the routes structure so that it looks the same as the sidebar
     generateRoutes(routes, basePath = '/') {
       const res = []

@@ -1,115 +1,96 @@
 <template>
-  <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" autocomplete="on" label-position="left">
-
-      <div class="title-container">
-        <h3 class="title">Login Form</h3>
-      </div>
-
-      <el-form-item prop="username">
-        <span class="svg-container">
-          <svg-icon icon-class="user" />
-        </span>
-        <el-input
-          ref="username"
-          v-model="loginForm.username"
-          placeholder="Username"
-          name="username"
+  <div class="main-box">
+    <div :class="['container', 'container-register', { 'is-txl': isLogin }]">
+      <form ref="registerForm" :model="registerForm">
+        <h2 class="title">Create Account</h2>
+        <span class="text">or use email for registration</span>
+        <input ref="username" v-model="registerForm.username" class="form__input" type="text" placeholder="Name" required>
+        <input ref="email" v-model="registerForm.email" class="form__input" type="text" placeholder="Email">
+        <input ref="password" v-model="registerForm.password" class="form__input" type="password" placeholder="Password">
+        <br>
+        <br>
+        <el-radio-group
+          v-model="registerForm.identity"
+          placeholder="identity"
+          name="identity"
+          type="text"
+          style="text-align: center"
+        >
+          <el-radio :label="1">患者</el-radio>
+          <el-radio :label="2">医生</el-radio>
+          <el-radio :label="3">医院</el-radio>
+        </el-radio-group>
+        <button :loading="loading" type="button" class="primary-btn" @click="handleRegister">立即注册</button>
+      </form>
+    </div>
+    <div :class="['container', 'container-login', { 'is-txl is-z200': isLogin }]">
+      <form ref="loginForm" :model="loginForm">
+        <h2 class="title">Sign in to Website</h2>
+        <span class="text">or use email for registration</span>
+        <input ref="username" v-model="loginForm.username" class="form__input" type="text" placeholder="Name" required>
+        <input ref="password" v-model="loginForm.password" class="form__input" type="password" placeholder="Password" required>
+        <br>
+        <br>
+        <br>
+        <br>
+        <el-radio-group
+          v-model="loginForm.identity"
+          placeholder="identity"
+          name="identity"
           type="text"
           tabindex="1"
-          autocomplete="on"
-        />
-      </el-form-item>
-
-      <el-tooltip v-model="capsTooltip" content="Caps lock is On" placement="right" manual>
-        <el-form-item prop="password">
-          <span class="svg-container">
-            <svg-icon icon-class="password" />
-          </span>
-          <el-input
-            :key="passwordType"
-            ref="password"
-            v-model="loginForm.password"
-            :type="passwordType"
-            placeholder="Password"
-            name="password"
-            tabindex="2"
-            autocomplete="on"
-            @keyup.native="checkCapslock"
-            @blur="capsTooltip = false"
-            @keyup.enter.native="handleLogin"
-          />
-          <span class="show-pwd" @click="showPwd">
-            <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-          </span>
-        </el-form-item>
-      </el-tooltip>
-
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
-
-      <div style="position:relative">
-        <div class="tips">
-          <span>Username : admin</span>
-          <span>Password : any</span>
-        </div>
-        <div class="tips">
-          <span style="margin-right:18px;">Username : editor</span>
-          <span>Password : any</span>
-        </div>
-
-        <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
-          Or connect with
-        </el-button>
+          style="margin-left: 20px"
+        >
+          <el-radio :label="1">患者</el-radio>
+          <el-radio :label="2">医生</el-radio>
+          <el-radio :label="3">医院</el-radio>
+        </el-radio-group>
+        <button :loading="loading" class="primary-btn" type="button" @click="handleLogin">立即登录</button>
+      </form>
+    </div>
+    <div :class="['switch', { login: isLogin }]">
+      <div class="switch__circle" />
+      <div class="switch__circle switch__circle_top" />
+      <div class="switch__container">
+        <h2>{{ isLogin ? 'Hello Friend !' : 'Welcome Back !' }}</h2>
+        <p>
+          {{
+            isLogin
+              ? 'Enter your personal details and start journey with us'
+              : 'To keep connected with us please login with your personal info'
+          }}
+        </p>
+        <button class="primary-btn" @click="isLogin = !isLogin">
+          {{ isLogin ? '立即注册' : '立即登录' }}
+        </button>
       </div>
-    </el-form>
-
-    <el-dialog title="Or connect with" :visible.sync="showDialog">
-      Can not be simulated on local, so please combine you own business simulation! ! !
-      <br>
-      <br>
-      <br>
-      <social-sign />
-    </el-dialog>
+    </div>
   </div>
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
-import SocialSign from './components/SocialSignin'
+// import { validUsername } from '@/utils/validate'
 
+import { register } from '@/api/user'
+import { setStore, getStore, removeStore } from '@/utils/localstorage'
+import { keyGenerate } from '@/api/set'
 export default {
   name: 'Login',
-  components: { SocialSign },
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
-      } else {
-        callback()
-      }
-    }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
-        callback()
-      }
-    }
     return {
-      loginForm: {
-        username: 'admin',
-        password: '111111'
-      },
-      loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
-      },
-      passwordType: 'password',
-      capsTooltip: false,
       loading: false,
-      showDialog: false,
-      redirect: undefined,
-      otherQuery: {}
+      isLogin: false,
+      loginForm: {
+        username: '',
+        password: '',
+        identity: ''
+      },
+      registerForm: {
+        username: '',
+        password: '',
+        email: '',
+        identity: ''
+      }
     }
   },
   watch: {
@@ -138,37 +119,53 @@ export default {
     // window.removeEventListener('storage', this.afterQRScan)
   },
   methods: {
-    checkCapslock(e) {
-      const { key } = e
-      this.capsTooltip = key && key.length === 1 && (key >= 'A' && key <= 'Z')
-    },
-    showPwd() {
-      if (this.passwordType === 'password') {
-        this.passwordType = ''
-      } else {
-        this.passwordType = 'password'
-      }
-      this.$nextTick(() => {
-        this.$refs.password.focus()
-      })
-    },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
-            .then(() => {
-              this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
-              this.loading = false
+      this.loading = true
+      // const keyset = keyGenerate(128)
+      // var tmp = {
+      //   // p: String(keyset.p),
+      //   alpha: String(keyset.alpha),
+      //   beta: String(keyset.beta)
+      // }
+      // setStore(this.loginForm.username, JSON.stringify(tmp))
+      // var tmp1 = getStore(this.loginForm.username)
+      // console.log(JSON.parse(tmp1))
+      this.$store.dispatch('user/login', this.loginForm)
+        .then(() => {
+          this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+          this.loading = false
+        })
+        .catch(() => {
+          this.loading = false
+        })
+    },
+    handleRegister() {
+      this.loading = true
+      register(this.registerForm)
+        .then(response => {
+          if (response.code != 200) {
+            this.$message({
+              message: response.message,
+              type: 'error'
             })
-            .catch(() => {
-              this.loading = false
+          } else {
+            this.$message({
+              message: response.message,
+              type: 'success'
             })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
+          }
+          this.loading = false
+          const keyset = keyGenerate(128)
+          var tmp = {
+            // p: String(keyset.p),
+            alpha: String(keyset.alpha),
+            beta: String(keyset.beta)
+          }
+          setStore(this.registerForm.username, JSON.stringify(tmp))
+        })
+        .catch(() => {
+          this.loading = false
+        })
     },
     getOtherQuery(query) {
       return Object.keys(query).reduce((acc, cur) => {
@@ -178,147 +175,184 @@ export default {
         return acc
       }, {})
     }
-    // afterQRScan() {
-    //   if (e.key === 'x-admin-oauth-code') {
-    //     const code = getQueryObject(e.newValue)
-    //     const codeMap = {
-    //       wechat: 'code',
-    //       tencent: 'code'
-    //     }
-    //     const type = codeMap[this.auth_type]
-    //     const codeName = code[type]
-    //     if (codeName) {
-    //       this.$store.dispatch('LoginByThirdparty', codeName).then(() => {
-    //         this.$router.push({ path: this.redirect || '/' })
-    //       })
-    //     } else {
-    //       alert('第三方登录失败')
-    //     }
-    //   }
-    // }
   }
 }
 </script>
 
-<style lang="scss">
-/* 修复input 背景不协调 和光标变色 */
-/* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
-
-$bg:#283443;
-$light_gray:#fff;
-$cursor: #fff;
-
-@supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
-  .login-container .el-input input {
-    color: $cursor;
-  }
-}
-
-/* reset element-ui css */
-.login-container {
-  .el-input {
-    display: inline-block;
-    height: 47px;
-    width: 85%;
-
-    input {
-      background: transparent;
-      border: 0px;
-      -webkit-appearance: none;
-      border-radius: 0px;
-      padding: 12px 5px 12px 15px;
-      color: $light_gray;
-      height: 47px;
-      caret-color: $cursor;
-
-      &:-webkit-autofill {
-        box-shadow: 0 0 0px 1000px $bg inset !important;
-        -webkit-text-fill-color: $cursor !important;
-      }
-    }
-  }
-
-  .el-form-item {
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    color: #454545;
-  }
-}
-</style>
-
 <style lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
-
-.login-container {
-  min-height: 100%;
-  width: 100%;
-  background-color: $bg;
-  overflow: hidden;
-
-  .login-form {
-    position: relative;
-    width: 520px;
-    max-width: 100%;
-    padding: 160px 35px 0;
-    margin: 0 auto;
-    overflow: hidden;
-  }
-
-  .tips {
-    font-size: 14px;
-    color: #fff;
-    margin-bottom: 10px;
-
-    span {
-      &:first-of-type {
-        margin-right: 16px;
-      }
-    }
-  }
-
-  .svg-container {
+.svg-container {
     padding: 6px 5px 6px 15px;
-    color: $dark_gray;
+    color: #889aa4;
     vertical-align: middle;
     width: 30px;
     display: inline-block;
   }
-
-  .title-container {
-    position: relative;
-
-    .title {
-      font-size: 26px;
-      color: $light_gray;
-      margin: 0px auto 40px auto;
-      text-align: center;
-      font-weight: bold;
+.main-box {
+  margin-left: 25%;
+  margin-top: 8%;
+  display: flex;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  width: 1000px;
+  //width: 100%;
+  min-width: 1000px;
+  min-height: 600px;
+  //height: 100%;
+  height: 600px;
+  padding: 25px;
+  background-color: #ecf0f3;
+  box-shadow: 10px 10px 10px #d1d9e6, -10px -10px 10px #f9f9f9;
+  border-radius: 12px;
+  overflow: hidden;
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    //top: 0;
+    width: 600px;
+    height: 100%;
+    padding: 25px;
+    background-color: #ecf0f3;
+    transition: all 1.25s;
+    form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      color: #a0a5a8;
+      .title {
+        font-size: 34px;
+        font-weight: 700;
+        line-height: 3;
+        color: #181818;
+      }
+      .text {
+        margin-top: 30px;
+        margin-bottom: 12px;
+      }
+      .form__input {
+        width: 350px;
+        height: 40px;
+        margin: 4px 0;
+        padding-left: 25px;
+        font-size: 13px;
+        letter-spacing: 0.15px;
+        border: none;
+        outline: none;
+        // font-family: 'Montserrat', sans-serif;
+        background-color: #ecf0f3;
+        transition: 0.25s ease;
+        border-radius: 8px;
+        box-shadow: inset 2px 2px 4px #d1d9e6, inset -2px -2px 4px #f9f9f9;
+        &::placeholder {
+          color: #a0a5a8;
+        }
+      }
     }
   }
-
-  .show-pwd {
+  .container-register {
+    z-index: 100;
+    left: calc(100% - 600px);
+  }
+  .container-login {
+    left: calc(100% - 600px);
+    z-index: 0;
+  }
+  .is-txl {
+    left: 0;
+    transition: 1.25s;
+    transform-origin: right;
+  }
+  .is-z200 {
+    z-index: 200;
+    transition: 1.25s;
+  }
+  .switch {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: absolute;
-    right: 10px;
-    top: 7px;
-    font-size: 16px;
-    color: $dark_gray;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 400px;
+    padding: 50px;
+    z-index: 200;
+    transition: 1.25s;
+    background-color: #ecf0f3;
+    overflow: hidden;
+    box-shadow: 4px 4px 10px #d1d9e6, -4px -4px 10px #f9f9f9;
+    color: #a0a5a8;
+    .switch__circle {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background-color: #ecf0f3;
+      box-shadow: inset 8px 8px 12px #d1d9e6, inset -8px -8px 12px #f9f9f9;
+      bottom: -60%;
+      left: -60%;
+      transition: 1.25s;
+    }
+    .switch__circle_top {
+      top: -30%;
+      left: 60%;
+      width: 300px;
+      height: 300px;
+    }
+    .switch__container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      position: absolute;
+      width: 400px;
+      padding: 50px 55px;
+      transition: 1.25s;
+      h2 {
+        font-size: 34px;
+        font-weight: 700;
+        line-height: 3;
+        color: #181818;
+      }
+      p {
+        font-size: 14px;
+        letter-spacing: 0.25px;
+        text-align: center;
+        line-height: 1.6;
+      }
+    }
+  }
+  .login {
+    left: calc(100% - 400px);
+    .switch__circle {
+      left: 0;
+    }
+  }
+  .primary-btn {
+    width: 180px;
+    height: 50px;
+    border-radius: 25px;
+    margin-top: 50px;
+    text-align: center;
+    line-height: 50px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    background-color: #4b70e2;
+    color: #f9f9f9;
     cursor: pointer;
-    user-select: none;
-  }
-
-  .thirdparty-button {
-    position: absolute;
-    right: 0;
-    bottom: 6px;
-  }
-
-  @media only screen and (max-width: 470px) {
-    .thirdparty-button {
-      display: none;
+    box-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #f9f9f9;
+    &:hover {
+      box-shadow: 1px 1px 1px 0 rgb(255 255 255 / 50%),
+        -1px -1px 1px 0 rgb(116 125 136 / 50%),
+        inset -1px -1px 1px 0 rgb(255 255 255 / 20%),
+        inset -1px -1px 1px 0 rgb(0 0 0 / 40%);
     }
   }
 }
 </style>
+

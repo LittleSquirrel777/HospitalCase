@@ -1,0 +1,32 @@
+{
+  "name": "y",
+  "version": "1.0.0",
+  "description": "test the myencrypt",
+  "main": "test1.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "export NODE_OPTIONS=--openssl-legacy-provider&&vue-cli-service build"
+  },
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "fs": "^0.0.1-security",
+    "jstest": "^1.0.5",
+    "os": "^0.1.2",
+    "path": "^0.12.7"
+  },
+  "author": "lzemei",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.21.8",
+    "@babel/preset-env": "^7.21.5",
+    "ffi-napi": "^4.0.3",
+    "gulp": "^4.0.2",
+    "gulp-autoprefixer": "^8.0.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-uglify": "^3.0.2",
+    "gulp-webserver": "^0.9.1",
+    "node-gyp": "^9.3.1",
+    "ref-napi": "^3.0.3",
+    "webpack-cli": "^5.1.1"
+  }
+}

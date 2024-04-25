@@ -1,0 +1,12 @@
+var browserify = require('browserify')
+var fs = require('fs')
+var path = require('path')
+var bundlePath = path.join(__dirname, 'test2.js')
+var b = browserify()
+b.add('./test1_cp.js')
+b.require('ffi-napi')
+b.require('ref-napi')
+b.bundle()
+  .on('error', function(err) { console.error(err) })
+  .pipe(fs.createWriteStream(bundlePath))
+// b.bundle().pipe(fs.createWriteStream(bundlePath));

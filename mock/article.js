@@ -10,26 +10,28 @@ for (let i = 0; i < count; i++) {
   List.push(Mock.mock({
     id: '@increment',
     timestamp: +Mock.Random.date('T'),
-    author: '@first',
-    reviewer: '@first',
+    name: '@first',
+    // reviewer: '@first',
     title: '@title(5, 10)',
-    content_short: 'mock data',
-    content: baseContent,
+    result: 'mock data',
+    remark: baseContent,
     forecast: '@float(0, 100, 2, 2)',
-    importance: '@integer(1, 3)',
+    feature1: '@float(0, 100, 2, 2)',
+    feature2: '@float(0, 100, 2, 2)',
+    feature3: '@float(0, 100, 2, 2)',
+    feature4: '@float(0, 100, 2, 2)',
     'type|1': ['CN', 'US', 'JP', 'EU'],
     'status|1': ['published', 'draft'],
     display_time: '@datetime',
     comment_disabled: true,
     pageviews: '@integer(300, 5000)',
-    image_uri,
-    platforms: ['a-platform']
+    image_uri
   }))
 }
 
 module.exports = [
   {
-    url: '/vue-element-admin/article/list',
+    url: '/article/list',
     type: 'get',
     response: config => {
       const { importance, type, title, page = 1, limit = 20, sort } = config.query
@@ -40,11 +42,9 @@ module.exports = [
         if (title && item.title.indexOf(title) < 0) return false
         return true
       })
-
       if (sort === '-id') {
         mockList = mockList.reverse()
       }
-
       const pageList = mockList.filter((item, index) => index < limit * page && index >= limit * (page - 1))
 
       return {

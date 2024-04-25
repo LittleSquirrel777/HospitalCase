@@ -1,12 +1,13 @@
 import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
+import funnelSeries from 'echarts/src/chart/funnel/FunnelSeries'
 
 const state = {
   token: getToken(),
   name: '',
-  avatar: '',
-  introduction: '',
+  avatar: '@/assets/common/mountain.jpg',
+  email: '',
   roles: []
 }
 
@@ -23,6 +24,9 @@ const mutations = {
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
   },
+  SET_EMAIL: (state, email) => {
+    state.email = email
+  },
   SET_ROLES: (state, roles) => {
     state.roles = roles
   }
@@ -31,12 +35,13 @@ const mutations = {
 const actions = {
   // user login
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    const { username, password, identity } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
-        const { data } = response
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
+      login({ username: username, password: password, identity: identity }).then(response => {
+        commit('SET_NAME', username)
+        commit('SET_TOKEN', response.token)
+        // commit('SET_ROLES', roles)
+        setToken(response.token)
         resolve()
       }).catch(error => {
         reject(error)
@@ -47,25 +52,30 @@ const actions = {
   // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
-        const { data } = response
-
+      getInfo(state.name).then(response => {
+        const data = response
         if (!data) {
           reject('Verification failed, please Login again.')
         }
 
-        const { roles, name, avatar, introduction } = data
-
-        // roles must be a non-empty array
-        if (!roles || roles.length <= 0) {
-          reject('getInfo: roles must be a non-null array!')
+        // const { code, datanum, roles } = data
+        // // // roles must be a non-empty array
+        // if (!roles || roles.length <= 0) {
+        //   reject('getInfo: roles must be a non-null array!')
+        // }
+        let roles = []
+        if (data.identity == '2') {
+          roles = ['docter']
+        } else if (data.identity == '1') {
+          roles = ['patient']
+        } else {
+          roles = ['admin']
         }
-
         commit('SET_ROLES', roles)
-        commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
-        commit('SET_INTRODUCTION', introduction)
-        resolve(data)
+        commit('SET_NAME', response.user.username)
+        commit('SET_AVATAR', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
+        commit('SET_EMAIL', response.user.email)
+        resolve(response)
       }).catch(error => {
         reject(error)
       })
@@ -80,7 +90,6 @@ const actions = {
         commit('SET_ROLES', [])
         removeToken()
         resetRouter()
-
         // reset visited views and cached views
         // to fixed https://github.com/PanJiaChen/vue-element-admin/issues/2485
         dispatch('tagsView/delAllViews', null, { root: true })
